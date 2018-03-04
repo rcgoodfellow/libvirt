@@ -2886,8 +2886,12 @@ qemuDomainAssignAddresses(virDomainDefPtr def,
 
     qemuDomainAssignARMVirtioMMIOAddresses(def, qemuCaps);
 
-    if (qemuDomainAssignPCIAddresses(def, qemuCaps, driver, obj) < 0)
+
+    //if (def->os.arch != VIR_ARCH_ARMV7L && def->os.arch != VIR_ARCH_ARMV7B) 
+    //{
+      if (qemuDomainAssignPCIAddresses(def, qemuCaps, driver, obj) < 0)
         return -1;
+    //}
 
     if (qemuDomainAssignUSBAddresses(def, obj, newDomain) < 0)
         return -1;

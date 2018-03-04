@@ -459,6 +459,7 @@ VIR_ENUM_IMPL(virQEMUCaps, QEMU_CAPS_LAST,
               "pl011",
               "machine.pseries.max-cpu-compat",
               "dump-completed",
+              "display-gtk",
     );
 
 
@@ -1284,6 +1285,9 @@ virQEMUCapsComputeCmdFlags(const char *help,
         const char *nl = strstr(p, "\n");
         if ((p = strstr(p, "|none")) && p < nl)
             virQEMUCapsSet(qemuCaps, QEMU_CAPS_VGA_NONE);
+    }
+    if (strstr(help, "-display gtk")) {
+        virQEMUCapsSet(qemuCaps, QEMU_CAPS_GTK);
     }
     if (strstr(help, "-spice"))
         virQEMUCapsSet(qemuCaps, QEMU_CAPS_SPICE);
@@ -4842,6 +4846,9 @@ virQEMUCapsInitQMPMonitor(virQEMUCapsPtr qemuCaps,
     /* WebSockets were introduced between 1.3.0 and 1.3.1 */
     if (qemuCaps->version >= 1003001)
         virQEMUCapsSet(qemuCaps, QEMU_CAPS_VNC_WEBSOCKET);
+
+    if (qemuCaps->version >= 1006000)
+        virQEMUCapsSet(qemuCaps, QEMU_CAPS_GTK);
 
     /* -chardev spiceport is supported from 1.4.0, but usable through
      * qapi only since 1.5.0, however, it still cannot be queried

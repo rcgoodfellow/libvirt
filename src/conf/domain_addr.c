@@ -22,6 +22,7 @@
  */
 
 #include <config.h>
+#include <execinfo.h>
 
 #include "viralloc.h"
 #include "virlog.h"
@@ -793,6 +794,26 @@ virDomainPCIAddressFindUnusedFunctionOnBus(virDomainPCIAddressBusPtr bus,
     return ret;
 }
 
+static void print_trace (void)
+{
+  void *array[128];
+  size_t size;
+  char **strings;
+  size_t i;
+
+  size = backtrace (array, 128);
+  strings = backtrace_symbols (array, size);
+
+  printf ("PCI ERROR TRACE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+  printf ("Obtained %zd stack frames.\n", size);
+
+  for (i = 0; i < size; i++)
+     printf ("%s\n", strings[i]);
+
+  free (strings);
+  printf ("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! END PCI ERROR TRACE");
+}
+
 
 static int ATTRIBUTE_NONNULL(1) ATTRIBUTE_NONNULL(2)
 virDomainPCIAddressGetNextAddr(virDomainPCIAddressSetPtr addrs,
@@ -804,6 +825,7 @@ virDomainPCIAddressGetNextAddr(virDomainPCIAddressSetPtr addrs,
     virPCIDeviceAddress a = { 0 };
 
     if (addrs->nbuses == 0) {
+        print_trace();
         virReportError(VIR_ERR_XML_ERROR, "%s", _("No PCI buses available"));
         goto error;
     }

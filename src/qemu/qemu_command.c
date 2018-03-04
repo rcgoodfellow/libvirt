@@ -8116,6 +8116,24 @@ qemuBuildGraphicsSPICECommandLine(virQEMUDriverConfigPtr cfg,
     return -1;
 }
 
+
+static int
+qemuBuildGraphicsDesktopCommandLine(/*virQEMUDriverConfigPtr cfg,*/
+                                virCommandPtr cmd,
+                                virQEMUCapsPtr qemuCaps
+                                /*virDomainGraphicsDefPtr graphics*/)
+{
+    if(!virQEMUCapsGet(qemuCaps, QEMU_CAPS_GTK)) {
+        virReportError(VIR_ERR_CONFIG_UNSUPPORTED,
+                _("-display gtk not supported with this QEMU"));
+        return -1;
+    }
+
+    virCommandAddArgList(cmd, "-display", "gtk", NULL);
+
+    return 0;
+}
+
 static int
 qemuBuildGraphicsCommandLine(virQEMUDriverConfigPtr cfg,
                              virCommandPtr cmd,
@@ -8158,8 +8176,10 @@ qemuBuildGraphicsCommandLine(virQEMUDriverConfigPtr cfg,
     case VIR_DOMAIN_GRAPHICS_TYPE_SPICE:
         return qemuBuildGraphicsSPICECommandLine(cfg, cmd, qemuCaps, graphics);
 
-    case VIR_DOMAIN_GRAPHICS_TYPE_RDP:
     case VIR_DOMAIN_GRAPHICS_TYPE_DESKTOP:
+        return qemuBuildGraphicsDesktopCommandLine(cmd, qemuCaps);
+
+    case VIR_DOMAIN_GRAPHICS_TYPE_RDP:
     case VIR_DOMAIN_GRAPHICS_TYPE_LAST:
         virReportError(VIR_ERR_CONFIG_UNSUPPORTED,
                        _("unsupported graphics type '%s'"),
